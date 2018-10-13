@@ -20,7 +20,7 @@ class DqServer{
             'fd'=> $newfd,
             'ip'=>$ip,
             'port'=>$port,
-            'create_time'=>date('Y-m-d H:i:s'),   
+            'create_time'=>date('Y-m-d H:i:s'),         
         );
         $key = $this->getClientKey($newfd);
         $this->clientsObjects[$key] = $clients;
