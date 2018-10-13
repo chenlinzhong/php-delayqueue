@@ -2,7 +2,7 @@
 include_once 'DqLog.php';
 
 class DqComm{
-    static $max_package_size=4096;
+    static $max_package_size=4096;  
     //获取消息
     public static function socket_read($cfd){
         try {
