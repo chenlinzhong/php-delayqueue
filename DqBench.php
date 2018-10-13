@@ -2,7 +2,7 @@
 
 include_once 'DqLoader.php';
 include_once 'DqClient.php';
-include_once 'DqComm.php';
+include_once 'DqComm.php';   
 
 
 class DqBench extends Thread{
