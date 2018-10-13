@@ -13,7 +13,7 @@ class DqAlert{
             foreach ($tmp as $v){
                 $v = trim($v);
                 if(!empty($v)) {
-                    $mailto[] = $v;
+                    $mailto[] = $v; 
                 }
             }
 
