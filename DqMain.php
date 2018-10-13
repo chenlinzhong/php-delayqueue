@@ -19,7 +19,7 @@ class DqMain
                 $server = new DqServer();
                 $server->run();
                 exit;
-            }
+            }  
         }
     }
 
