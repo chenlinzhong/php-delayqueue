@@ -13,7 +13,7 @@ class DqMailer{
         $mail->SMTPAuth = true;
         $mail->Port     = $mailConfig['port'];
         $mail->Host     = $mailConfig['host'];
-        $mail->Username = $mailConfig['user'];
+        $mail->Username = $mailConfig['user'];    
         $mail->Password = $mailConfig['pwd'];
         $mail->CharSet  = "utf-8";
         $mail->From     = $mailConfig['user'];
