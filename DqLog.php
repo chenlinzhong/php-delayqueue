@@ -13,7 +13,7 @@ class DqLog{
 
     public static function writeLog($str,$flag=self::LOG_TYPE_NORMAL){
         $str = "[" . date('Y-m-d H:i:s') . "]PID=". DqMain::$pid.' '. $str;
-        $dir  = self::getLogDir();
+        $dir  = self::getLogDir();  
         $seg=date('Ymd');
         switch ($flag) {
             case self::LOG_TYPE_EXCEPTION:
