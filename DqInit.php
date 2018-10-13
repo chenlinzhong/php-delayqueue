@@ -18,7 +18,7 @@ if($_SERVER['argv'][1]=='--port' && is_numeric($_SERVER['argv'][2])){
 /**
  * 设置进程名称
  */
-cli_set_process_title(DqConf::DQ_MASTER);
+cli_set_process_title(DqConf::DQ_MASTER);   
 
 $childNotifySucc=array();
 DqMain::$pid = posix_getpid();
