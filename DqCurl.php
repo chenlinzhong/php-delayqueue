@@ -8,7 +8,7 @@ class DqCurl {
     const CRLF = "\r\n";
     public $cookies = array();
     public $headers = array();
-    public $post_fields = array();
+    public $post_fields = array();   
     public $query_fields = array();
     public $has_upload = false;
 
