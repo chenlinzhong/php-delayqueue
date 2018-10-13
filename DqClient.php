@@ -4,7 +4,7 @@ include_once 'DqLoader.php';
 class DqClient{
 
 
-    private  $serverList = array();
+    private  $serverList = array(); 
     private  $fd = NULL;
 
     public  function addServer($server){
