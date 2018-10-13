@@ -10,7 +10,7 @@ class DqRedis{
 
     public static function getRedisServerById($jobId){
         $key = crc32($jobId) % count(DqConf::getRedisServer());
-        $server =  DqConf::getRedisServer();
+        $server =  DqConf::getRedisServer();    
         return $server[$key];
     }
 
