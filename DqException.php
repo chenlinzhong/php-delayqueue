@@ -6,5 +6,5 @@ class DqException extends Exception{
     }
     public function getDqMessage(){
         return "\n".'file:'.$this->getFile().' line:'.$this->getLine().' '.$this->getMessage();
-    }
+    } 
 }
