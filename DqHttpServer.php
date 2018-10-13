@@ -13,7 +13,7 @@ $p_name=DqConf::DQ_HTTP_SERVER;
 check_self($p_name);
 
 /**
- * php二进制文件路径，用于启动web服务，版本必须大于5.4
+ * php二进制文件路径，用于启动web服务，版本必须大于5.4   
  */
 $phpBin=DqConf::$phpBin;
 
