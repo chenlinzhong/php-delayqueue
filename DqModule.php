@@ -17,7 +17,7 @@ class DqModule{
             foreach ($arr as $v) {
                 self::$topRegistered[$v['topic']] = $v;
             }
-            $time = time();
+            $time = time();  
             DqLog::writeLog('getRegisterTopic,data='.json_encode(self::$topRegistered).',pid='.posix_getpid());
         }
         if(empty(self::$topRegistered)) {
