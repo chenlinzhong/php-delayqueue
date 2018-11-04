@@ -35,12 +35,12 @@
 
 整个延迟队列主要由4个部分
 
-  * 1. JobPool用来存放所有Job的元信息。
-  * 2. DelayBucket是一组以时间为维度的有序队列，用来存放所有需要延迟的Job（这里只存放Job Id）。
-  * 3. Timer负责实时扫描各个Bucket，并将delay时间大于等于当前时间的Job放入到对应的Ready Queue。
-  * 4. ReadyQueue存放处于Ready状态的Job（这里只存放JobId），以供消费程序消费。
+  * JobPool用来存放所有Job的元信息。
+  * DelayBucket是一组以时间为维度的有序队列，用来存放所有需要延迟的Job（这里只存放Job Id）。
+  * Timer负责实时扫描各个Bucket，并将delay时间大于等于当前时间的Job放入到对应的Ready Queue。
+  * ReadyQueue存放处于Ready状态的Job（这里只存放JobId），以供消费程序消费。
 
-
+![image](./images/delaythird.png)
 
 消息结构
 每个Job必须包含一下几个属性：
@@ -54,11 +54,13 @@
 
 对于同一类的topic delaytime,ttr一般是固定，job可以在精简一下属性
 
-1.topic：Job类型。可以理解成具体的业务名称
-2.id：Job的唯一标识。用来检索和删除指定的Job信息。
-3.body：Job的内容，供消费者做具体的业务处理，以json格式存储。
+  1.topic：Job类型。可以理解成具体的业务名称
+  
+  2.id：Job的唯一标识。用来检索和删除指定的Job信息。
+  
+  3.body：Job的内容，供消费者做具体的业务处理，以json格式存储。
 
-delaytime,ttr在topicadmin配置
+delaytime,ttr在topicadmin后台配置
 
 
 
@@ -79,7 +81,7 @@ delaytime,ttr在topicadmin配置
 #### 四、架构设计与说明
 
 总体架构
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/jiagou.png)
+![image](./images/jiagou.png)
 采用master-work架构模式，主要包括6个模块：
 
 * 1.dq-mster:  主进程，负责管理子进程的创建，销毁，回收以及信号通知
@@ -89,7 +91,17 @@ delaytime,ttr在topicadmin配置
 * 5.dq-redis-checker: 负责检查redis的服务状态，如果redis宕机，发送告警邮件
 * 6.dq-http-server: 提供web后台界面，用于注册topic
 
-#### 五、部署
+### 五、模块流程图
+消息写入:
+![image](./images/xieru.png)
+
+timer查找到期消息:
+![image](./images/scan.png)
+
+consumer消费流程:
+![image](./images/xiaofei.png)
+
+#### 六、部署
 
 环境依赖：`PHP 5.4+  安装sockets，redis，pcntl,pdo_mysql 拓展`
 
@@ -139,22 +151,22 @@ CREATE TABLE `dq_topic` (
 > php DqHttpServer.php --port 8088
 
 访问:http://127.0.0.1:8088,出现配置界面
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/index.png)
+![image](./images/index.png)
 
 redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
 
 ###### stop4:启动服务进程:   
 > php DqInit.php --port 6789 
 看到如下信息说明启动成功
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/list.png)
+![image](./images/list.png)
 
 ###### stop5:配置告信息(比如redis宕机)
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/warning.png)
+![image](./images/warning.png)
 
 ###### stop6:注册topic
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/topic.png)
+![image](./images/topic.png)
 
-![image](https://github.com/chenlinzhong/php-delayqueue/blob/master/images/topiclist.png)
+![image](./images/topiclist.png)
 
 ###### step7: 写入数据，在项目根目录下新建test.php文件写入
 ```
@@ -213,7 +225,7 @@ echo 'del耗时:'.(msectime() - $time)."ms\n";
 
 
 
-### 六、性能测试
+### 七、性能测试
 需要安装pthreads拓展：
 
 测试原理：使用多线程模拟并发，在1s内能成功返回请求成功的个数
@@ -227,20 +239,20 @@ requests： 每个并发产生的请求数
 qps：2400
 ```
 
-### 七、值得一提的性能优化点：
+### 八、值得一提的性能优化点：
 * 1.redis multi命令：将多个对redis的操作打包成一个减少网络开销
 * 2.计数的操作异步处理，在异步逻辑里面用函数的static变量来保存，当写入redis成功后释放static变量，可以在redis出现异常时计数仍能保持一致，除非进程退出
 * 3.内存泄露检测有必要:  所有的内存分配在底层都是调用了brk或者mmap，只要程序只有大量brk或者mmap的系统调用，内存泄露可能性非常高 ,检测命令: strace -c -p pid | grep  'mmap| brk'
 * 4.检测程序的系统调用情况：strace -c -p pid  ，发现某个系统函数调用是其他的数倍，可能大概率程序存在问题
 
-### 八、异常处理
+### 九、异常处理
 
 如果调用通知接口在超时时间内，没有收到回复认为通知失败，系统会重新把数据放入队列，重新通知，系统默认最大通知10次(可以在Dqconf.php文件中修改$notify_exp_nums)通知间隔为2n+1，比如第一次1分钟，通知失败，第二次3分钟后，直到收到回复，超出最大通知次数后系统自动丢弃，同时发邮件通知
 
 `ps:网络抖动在所难免，通知接口如果涉及到核心的服务,一定要保证幂等！！`
 
 
-### 九、线上情况
+### 十、线上情况
 
 线上部署了两个实例每个机房部一个，4个redis共16G内存作存储，服务稳定运行数月，各项指标均符合预期
 
