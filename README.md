@@ -33,7 +33,37 @@
 
 基本以上原因打算自己写一个，平常使用php多，项目基本redis的zset结构作为存储，用php语言实现 ，实现原理参考了有赞团队：https://tech.youzan.com/queuing_delay/
 
+整个延迟队列主要由4个部分
+
+  * 1. JobPool用来存放所有Job的元信息。
+  * 2. DelayBucket是一组以时间为维度的有序队列，用来存放所有需要延迟的Job（这里只存放Job Id）。
+  * 3. Timer负责实时扫描各个Bucket，并将delay时间大于等于当前时间的Job放入到对应的Ready Queue。
+  * 4. ReadyQueue存放处于Ready状态的Job（这里只存放JobId），以供消费程序消费。
+
+
+
+消息结构
+每个Job必须包含一下几个属性：
+
+  1. topic：Job类型。可以理解成具体的业务名称。
+  2. id：Job的唯一标识。用来检索和删除指定的Job信息。
+  3. delayTime：jod延迟执行的时间，13位时间戳
+  4. ttr（time-to-run)：Job执行超时时间。
+  5. body：Job的内容，供消费者做具体的业务处理，以json格式存储。
+
+
+对于同一类的topic delaytime,ttr一般是固定，job可以在精简一下属性
+
+1.topic：Job类型。可以理解成具体的业务名称
+2.id：Job的唯一标识。用来检索和删除指定的Job信息。
+3.body：Job的内容，供消费者做具体的业务处理，以json格式存储。
+
+delaytime,ttr在topicadmin配置
+
+
+
 ### 三、目标
+
 * 轻量级：有较少的php的拓展就能直接运行，不需要引入网络框架，比如swoole，workman之类的
 * 稳定性：采用master-work架构，master不做业务处理，只负责管理子进程，子进程异常退出时自动拉起
 * 可用性：
