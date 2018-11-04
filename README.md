@@ -271,6 +271,16 @@ redis宕机通知:
 * 会员过期前3天召回通知
 
 
+### 十一、参考
+
+https://www.cnblogs.com/peachyy/p/7398430.html
+https://tech.youzan.com/queuing_delay/
+http://www.runoob.com/bootstrap/bootstrap-tutorial.html
+
+
+
+
+
 
 
 
