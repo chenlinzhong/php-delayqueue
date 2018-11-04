@@ -91,7 +91,7 @@ delaytime,ttr在topicadmin后台配置
 * 5.dq-redis-checker: 负责检查redis的服务状态，如果redis宕机，发送告警邮件
 * 6.dq-http-server: 提供web后台界面，用于注册topic
 
-### 五、模块流程图
+### 五、模块时序图
 消息写入:
 
 ![image](./images/xieru.png)
