@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html style="height:100%;">
 <head>
     <meta charset="utf-8">
     <title>延迟队列配置系统</title>
@@ -8,7 +8,7 @@
     <script src="/bootstrap.min.js"></script>
     <script src="/dq.js"></script>
 </head>
-<body>
+<body style="min-height:100%;margin:0;padding:0;position:relative;">
 <div style="height: 40px; width: 100%;background-color: #337ab7;color: white;padding-top: 8px;font-size: 18px;font-weight: bold;padding-left: 20px">延时队列配置系统</div>
 <input type="hidden" value="{$get['id']}" id="task_id">
 <ul id="myTab" class="nav nav-tabs">
@@ -94,6 +94,7 @@
                 <div class="col-sm-10">
                     <input type="text" class="form-control topic" id="lastname"
                            placeholder="请输入topic" style="width: 200px" value="{$get['topic']}">
+                    <span style="color: red;display: none" id="topic-err">topic已存在请重新输入</span>
                 </div>
             </div>
             <div class="form-group">
@@ -115,6 +116,13 @@
                 <div class="col-sm-10">
                     <input type="text" class="form-control method" id="lastname"
                            placeholder="请输入请求方式GET|POST" style="width: 200px" value="{$get['method']}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="lastname" class="col-sm-2 control-label ">重试标记</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control re_notify_flag" id="lastname"
+                           placeholder="" style="width: 200px" value="{$get['re_notify_flag']}">
                 </div>
             </div>
             <div class="form-group">
@@ -265,7 +273,8 @@
     </div>
 </div>
 </div>
-<div style="background-color: gray;width: 100%;height: 40px;position: fixed;bottom: 0;color: white;padding-top: 10px;float: right;padding-left: 20px">
+<br><br>
+<div style="background-color: gray;width: 100%;height: 40px;position:absolute;bottom:0;color: white;padding-top: 10px;float: right;padding-left: 20px">
 designed 2018.09 by clz
 </div>
 </body>

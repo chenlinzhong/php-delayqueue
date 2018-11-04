@@ -66,7 +66,40 @@ $(function () {
         return false;
     });
 
+    var is_topic_can_use=1;
+    $('#topic_add').find('.topic').keyup(function () {
+        var topic=$('#topic_add').find('.topic').val();
+        if(isNull(topic)){
+            return ;
+        }
+        var post_url='/check.php';
+        var post_data={'topic':topic,'id':$('#task_id').val()};
+        $.ajax({
+            'url': post_url,
+            'type':'get',
+            'data': post_data,
+            'dataType':'json',
+            'success':function(res){
+                if(res.code==1){
+                    is_topic_can_use = 1;
+                    $('#topic-err').hide();
+                }else{
+                    is_topic_can_use = 0;
+                    $('#topic-err').show();
+                }
+            },
+            'error':function(jqXHR, textStatus, errorThrown){ //网络异常中断处理
+                //alertbox(0,'网络异常',3000);
+            }
+        })
+    });
+
+
     $('.btn-topic').click(function () {
+        if(!is_topic_can_use){
+            alert('请输入正确topic');
+            return false;
+        }
         var postData={
             't_name':$('#topic_add').find('.t_name').val(),
             'delay':$('#topic_add').find('.delay').val(),
@@ -76,7 +109,8 @@ $(function () {
             'createor':$('#topic_add').find('.createor').val(),
             'topic':$('#topic_add').find('.topic').val(),
             'method':$('.method').val(),
-            'id':$('#task_id').val()
+            'id':$('#task_id').val(),
+            're_notify_flag':$('.re_notify_flag').val()
         };
         var post_url='/add.php?op=topic_add';
         $.ajax({

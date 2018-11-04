@@ -45,7 +45,7 @@ try {
 
     $strCondition = '';
     $page = isset($_GET['page']) ? $_GET['page'] : 1;
-    $size = 5;
+    $size = 15;
 
     $con = array();
     if (!empty($_GET['s_topic'])) {
