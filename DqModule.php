@@ -38,22 +38,59 @@ class DqModule{
             DqRedis::delMsg($topic, $tid);
             $result = self::send_http_request($notifyInfo, $data);
 
+            DqRedis::incr_nums($id, 'total_notfiy');
+            DqRedis::incr_nums($id, 'tn:' . date('Ymd'));
+
             if($result) {
-                DqRedis::incr_nums($id,'total_notfiy');
-                DqRedis::incr_nums($id,'tn:'.date('Ymd'));
-            }else{
+                //判断跟re_notify_flag判断是否需要重试
+                $flag= trim($notifyInfo['re_notify_flag']);
+                if($result!==true){
+                    $arrRes = json_decode($result,true);
+                    if(!empty($flag) && is_array($arrRes)){
+                        $compareRet = self::check_renotify_flag($arrRes,$flag);
+                        DqLog::writeLog("$topic,$tid,re_notify_flag=" . $flag . ',response=' . $result.',ret='.$compareRet);
+                        if($compareRet){
+                            throw  new Exception($reply_empty_flag);
+                        }
+                    }
+                }
+            }else{  //请求接口没有收到回复
                 throw  new Exception($reply_empty_flag);
             }
         }catch (Exception $e){
+
             //通知接口回复为空，认定是通知一次，重新写入队列，1分钟后再通知，累计通知10次后，发邮件通知之后丢弃处理
             if($e->getMessage()==$reply_empty_flag){
+                DqLog::writeLog("$topic,$tid,reply_empty,will notify agin");
                 DqRedis::incr_nums($id,'te:'.date('Ymd'));
                 self::notify_fail_handler($topic,$tid,$data);
             }else{
                 $strMsg = 'notify occur exp,args='.json_encode(func_get_args());
                 DqLog::writeLog($strMsg,DqLog::LOG_TYPE_EXCEPTION);
             }
+
         }
+    }
+
+    //检测flag标志
+    static function check_renotify_flag($res,$re_noitfy_flag=''){
+        $re_noitfy_flag = trim($re_noitfy_flag);
+        if(empty($re_noitfy_flag)){
+            return false;
+        }
+        preg_match_all('/\{\s*(res\..+?)\s*\}/', $re_noitfy_flag, $matches, PREG_SET_ORDER);
+        foreach ($matches as $value) {
+            $tmp = explode('.', $value[1]);
+            $cusVar = '$res';
+            unset($tmp[0]);
+            foreach ($tmp as $v) {
+                $cusVar .= '["' . $v . '"]';
+            }
+            $re_noitfy_flag = str_replace($value[0],$cusVar,$re_noitfy_flag);
+        }
+        $ret = false;
+        eval("\$ret=".$re_noitfy_flag.";");
+        return $ret;
     }
 
     static function notify_fail_handler($topic,$tid,$data){
@@ -110,11 +147,11 @@ class DqModule{
                 }
                 $strMsg = 'reg_id_'.$id.',curl='.$http_request->get_curl_cli().' return is null,callbackinfo='.json_encode($registerCallback);
                 DqLog::writeLog($strMsg,DqLog::LOG_TYPE_NOTIFY_FAIL);
-                return false;
+                return $response;
             }
             $strMsg = 'reg_id_'.$id.',curl='.$http_request->get_curl_cli().' return='.$response.',callbackinfo='.json_encode($registerCallback);
             DqLog::writeLog($strMsg,DqLog::LOG_TYPE_NOTIFY_SUCC);
-            return true;
+            return $response;
         } catch (Exception $e) {
             DqLog::writeLog('send_http_request fail,msg='.$e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
             return false;

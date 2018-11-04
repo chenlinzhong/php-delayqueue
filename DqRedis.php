@@ -362,16 +362,19 @@ class DqRedis{
                         foreach ($incrs as $k => $v) {
                             if($objRedis->incrby($k, $v)){
                                 unset($buf[$id][$k]); //删除已写入的
+                            }else{
+                                self::connect($redis, 'master', true); //强制重新连接
+                                DqLog::writeLog("redis_self_incr fail,$k, $v,buf=".json_encode($buf),DqLog::LOG_TYPE_EXCEPTION);
                             }
                         }
                     }
                 } catch (Exception $e) {
-                    DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage());
+                    DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
                 }
             }
             $time = time();
         }catch (Exception $e){
-            DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage());
+            DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
             return false;
         }
     }
@@ -405,6 +408,7 @@ class DqRedis{
             foreach ($buf as $key => $incr) {
                 try {
                     if (!$objRedis->hincrby('dq_nums', $key, $incr)) {
+                        self::connect($redis, 'master', true); //强制重新连接
                         DqLog::writeLog("incr_nums fail $id,$key,$incr,buf=".json_encode($buf), DqLog::LOG_TYPE_EXCEPTION);
                     }else{
                         unset($buf[$key]); //已写入的删除
@@ -416,6 +420,7 @@ class DqRedis{
             $time = time();
             return true;
         }catch (Exception $e){
+            DqLog::writeLog('incr_nums exception,msg='.$e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
             return false;
         }
     }
