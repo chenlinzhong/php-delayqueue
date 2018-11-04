@@ -67,5 +67,6 @@ while(true) {
         }
     }
     pcntl_signal_dispatch();
+    //DqMain::check_run_time();
     sleep(1);
 }

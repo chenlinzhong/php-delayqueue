@@ -206,6 +206,17 @@ class DqMain
             exit(0);
         }
     }
+
+    static function check_run_time(){
+        static  $time=0;
+        if(empty($time)){
+            $time = time();
+        }
+        if(!empty($time) && time() - $time > rand(85500,86300)){
+            self::$stop = 1;
+            DqLog::writeLog('check_run_time over max seconds,will exit');
+        }
+    }
 }
 
 function dq_quite_exit_sig_handler($sigNo){
