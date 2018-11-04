@@ -93,12 +93,15 @@ delaytime,ttr在topicadmin后台配置
 
 ### 五、模块流程图
 消息写入:
+
 ![image](./images/xieru.png)
 
 timer查找到期消息:
+
 ![image](./images/scan.png)
 
 consumer消费流程:
+
 ![image](./images/xiaofei.png)
 
 #### 六、部署
