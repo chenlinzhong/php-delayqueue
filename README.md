@@ -281,7 +281,7 @@ http://www.runoob.com/bootstrap/bootstrap-tutorial.html
 
 
 
-bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：490103404
+bug、修改建议、疑惑都欢迎提在issue中，或加本人qq：490103404
 
 
 
