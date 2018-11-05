@@ -280,7 +280,8 @@ https://tech.youzan.com/queuing_delay/
 http://www.runoob.com/bootstrap/bootstrap-tutorial.html
 
 
-mail: 490103404@qq.com
+
+bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：490103404
 
 
 
