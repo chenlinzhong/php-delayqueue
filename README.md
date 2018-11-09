@@ -210,6 +210,14 @@ echo 'get耗时:'.(msectime() - $time)."ms\n";
 $time = msectime();
 $boolRet = $dqClient->del($topic,$id);
 echo 'del耗时:'.(msectime() - $time)."ms\n";
+
+function msectime() {
+    list($msec, $sec) = explode(' ', microtime());
+    $msectime =  (float)sprintf('%.0f', (floatval($msec) + floatval($sec)) * 1000);
+    return $msectime;
+}
+
+
 ```
 执行php test.php
 
