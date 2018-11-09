@@ -109,42 +109,10 @@ consumer消费流程:
 环境依赖：`PHP 5.4+  安装sockets，redis，pcntl,pdo_mysql 拓展`
 
 ###### step1:安装数据库用于存储一些topic以及告警信息
+执行:
 
-```
-create database dq;
-#存放告警信息
-CREATE TABLE `dq_alert` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `host` varchar(255) NOT NULL DEFAULT '',
-  `port` int(11) NOT NULL DEFAULT '0',
-  `user` varchar(255) NOT NULL DEFAULT '',
-  `pwd` varchar(255) NOT NULL DEFAULT '',
-  `ext` varchar(2048) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
-#存放redis信息
-CREATE TABLE `dq_redis` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `t_name` varchar(200) NOT NULL DEFAULT '',
-  `t_content` varchar(2048) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
-#存储注册信息
-CREATE TABLE `dq_topic` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `t_name` varchar(1024) NOT NULL DEFAULT '',
-  `delay` int(11) NOT NULL DEFAULT '0',
-  `callback` varchar(1024) NOT NULL DEFAULT '',
-  `timeout` int(11) NOT NULL DEFAULT '3000',
-  `email` varchar(1024) NOT NULL DEFAULT '',
-  `topic` varchar(255) NOT NULL DEFAULT '',
-  `re_notify_flag` varchar(1024) NOT NULL DEFAULT '重试标记',
-  `createor` varchar(1024) NOT NULL DEFAULT '',
-  `status` tinyint(4) NOT NULL DEFAULT '1',
-  `method` varchar(32) NOT NULL DEFAULT 'GET',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
-```
+> mysql> source dq.sql
+
 
 ###### step2:在DqConfg.文件中配置数据库信息： DqConf::$db
 
@@ -168,7 +136,15 @@ redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
 ![image](./images/warning.png)
 
 ###### stop6:注册topic
-![image](./images/topic.png)
+![image](./images/topic2.png)
+
+重试标记说明:
+
+    1.接口返回为空默认重试
+    2.满足指定返回表达会重试，res表示返回的json数组，比如:
+        {res.code}==200 
+        {res.code}==200 && {res.data.status}==2 
+        {res.code}==200 && {res.data.status}==2 || {res.data.msg}=='返回失败'
 
 ![image](./images/topiclist.png)
 
@@ -205,6 +181,7 @@ qps：2400
 ```
 
 ### 八、值得一提的性能优化点：
+
 * 1.redis multi命令：将多个对redis的操作打包成一个减少网络开销
 * 2.计数的操作异步处理，在异步逻辑里面用函数的static变量来保存，当写入redis成功后释放static变量，可以在redis出现异常时计数仍能保持一致，除非进程退出
 * 3.内存泄露检测有必要:  所有的内存分配在底层都是调用了brk或者mmap，只要程序只有大量brk或者mmap的系统调用，内存泄露可能性非常高 ,检测命令: strace -c -p pid | grep  'mmap| brk'
@@ -212,15 +189,17 @@ qps：2400
 
 ### 九、异常处理
 
-如果调用通知接口在超时时间内，没有收到回复认为通知失败，系统会重新把数据放入队列，重新通知，系统默认最大通知10次(可以在Dqconf.php文件中修改$notify_exp_nums)通知间隔为2n+1，比如第一次1分钟，通知失败，第二次3分钟后，直到收到回复，超出最大通知次数后系统自动丢弃，同时发邮件通知
+1.如果调用通知接口在超时时间内，没有收到回复认为通知失败，系统会重新把数据放入队列，重新通知，系统默认最大通知10次(可以在Dqconf.php文件中修改$notify_exp_nums)通知间隔为2n+1，比如第一次1分钟，通知失败，第二次3分钟后，直到收到回复，超出最大通知次数后系统自动丢弃，同时发邮件通知
 
-`ps:网络抖动在所难免，通知接口如果涉及到核心的服务,一定要保证幂等！！`
 
-redis宕机通知:
+
+2.线上redis每隔1s持久化一次，存在丢失1s数据的情况，出现这种情况可以在日志中手动恢复过来
+
+3.redis宕机通知:
 
 ![image](./images/redisdown.png)
 
-
+`ps:网络抖动在所难免，通知接口如果涉及到核心的服务,一定要保证幂等！！`
 
 ### 十、线上情况
 
@@ -232,14 +211,24 @@ redis宕机通知:
 * 调用接口超时或者失败时做补偿
 * 会员过期前3天召回通知
 
+### 十一、不足与展望
 
-### 十一、参考
+
+1.由于团队使用的镜像缺少libevent拓展，所以dq-server基于select模型，并发高的场景下性能存在瓶颈，后续可以改为基于libevent事件模型，提升并发性能
+
+2.timer和consumer目前是采用多进程来做的，这个粒度感觉有点粗，可以考虑使用多线程模式，并且支持动态创建线程数来提高consumer的性能，最大程度保证消费及时
+
+
+
+### 十二、参考
 
 https://www.cnblogs.com/peachyy/p/7398430.html
 
 https://tech.youzan.com/queuing_delay/
 
 http://www.runoob.com/bootstrap/bootstrap-tutorial.html
+
+
 
 
 bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：490103404
