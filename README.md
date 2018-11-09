@@ -138,6 +138,7 @@ CREATE TABLE `dq_topic` (
   `timeout` int(11) NOT NULL DEFAULT '3000',
   `email` varchar(1024) NOT NULL DEFAULT '',
   `topic` varchar(255) NOT NULL DEFAULT '',
+  `re_notify_flag` varchar(1024) NOT NULL DEFAULT '重试标记',
   `createor` varchar(1024) NOT NULL DEFAULT '',
   `status` tinyint(4) NOT NULL DEFAULT '1',
   `method` varchar(32) NOT NULL DEFAULT 'GET',
@@ -148,7 +149,7 @@ CREATE TABLE `dq_topic` (
 ###### step2:在DqConfg.文件中配置数据库信息： DqConf::$db
 
 ###### step3: 启动http服务
-在DqConf.php文件中修改php了路径 $logPath
+在DqConf.php文件中修改php了路径 $phpBin
 
 命令：
 > php DqHttpServer.php --port 8088
@@ -280,7 +281,8 @@ https://tech.youzan.com/queuing_delay/
 http://www.runoob.com/bootstrap/bootstrap-tutorial.html
 
 
-mail: 490103404@qq.com
+bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：490103404
+
 
 
 
