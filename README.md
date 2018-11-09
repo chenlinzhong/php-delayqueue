@@ -137,6 +137,7 @@ CREATE TABLE `dq_topic` (
   `callback` varchar(1024) NOT NULL DEFAULT '',
   `timeout` int(11) NOT NULL DEFAULT '3000',
   `email` varchar(1024) NOT NULL DEFAULT '',
+  `re_notify_flag` varchar(1024) NOT NULL DEFAULT '',
   `topic` varchar(255) NOT NULL DEFAULT '',
   `createor` varchar(1024) NOT NULL DEFAULT '',
   `status` tinyint(4) NOT NULL DEFAULT '1',
@@ -196,7 +197,7 @@ $data=array(
     //可选，设置后以这个通知时间为准，默认延时时间在注册topic的时候指定
     'fix_time'=>date('Y-m-d 23:50:50'),
 );
-
+$time=msectime();
 //添加
 $boolRet = $dqClient->add($topic, $data);
 echo 'add耗时:'.(msectime() - $time)."ms\n";
