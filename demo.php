@@ -21,7 +21,7 @@ $data=array(
     'fix_time'=>date('Y-m-d 23:50:50'),
 );
 
-$time = msectime();
+$time = msectime(); 
 
 //添加
 $boolRet = $dqClient->add($topic, $data);
