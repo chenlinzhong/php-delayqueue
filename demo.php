@@ -1,9 +1,13 @@
 <?php
 include_once 'DqLoader.php';
 date_default_timezone_set("PRC");
+
+//server列表
 $server=array(
     '127.0.0.1:6789',
+    //'127.0.0.1:6788',
 );
+
 $dqClient = new DqClient();
 $dqClient->addServer($server);
 
@@ -18,7 +22,7 @@ $data=array(
         'ext'=>str_repeat('a',64),
     ),
     //可选，设置后以这个通知时间为准，默认延时时间在注册topic的时候指定
-    'fix_time'=>date('Y-m-d 23:50:50'),
+    //'fix_time'=>date('Y-m-d 23:50:50'),
 );
 
 $time = msectime(); 
