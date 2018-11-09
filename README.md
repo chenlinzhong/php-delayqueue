@@ -108,15 +108,15 @@ consumer消费流程:
 
 环境依赖：`PHP 5.4+  安装sockets，redis，pcntl,pdo_mysql 拓展`
 
-###### step1:安装数据库用于存储一些topic以及告警信息
+##### step1:安装数据库用于存储一些topic以及告警信息
 执行:
 
 > mysql> source dq.sql
 
 
-###### step2:在DqConfg.文件中配置数据库信息： DqConf::$db
+##### step2:在DqConfg.文件中配置数据库信息： DqConf::$db
 
-###### step3: 启动http服务
+##### step3: 启动http服务
 在DqConf.php文件中修改php了路径 $phpBin
 
 命令：
@@ -127,15 +127,12 @@ consumer消费流程:
 
 redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
 
-###### stop4:启动服务进程:   
-> php DqInit.php --port 6789 
-看到如下信息说明启动成功
-![image](./images/list.png)
 
-###### stop5:配置告信息(比如redis宕机)
+##### stop4:配置告信息(比如redis宕机)
+
 ![image](./images/warning.png)
 
-###### stop6:注册topic
+##### stop5:注册topic
 ![image](./images/topic2.png)
 
 重试标记说明:
@@ -148,16 +145,22 @@ redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
 
 ![image](./images/topiclist.png)
 
-###### step7: 写入数据，参考demo.php 
+##### step6:启动服务进程:   
 
-###### step8:查看日志
+> php DqInit.php --port 6789 
+看到如下信息说明启动成功
+![image](./images/list.png)
+
+##### step7: 写入数据，参考demo.php 
+
+##### step8:查看日志
 默认日志目录在项目目录的logs目录下，在DqConf.php修改$logPath
 
 * 1.请求日志：request_ymd.txt
 * 2.通知日志：notify_ymd.txt 
 * 3.错误日志：err_ymd.txt
 
-###### step9:如果配置文件有改动
+##### step9:如果配置文件有改动
 
 * 1.系统会自动检测配置文件新，如果有改动，会自动退出(没有找到较好的热更新的方案)，需要重启，可以在crontab里面建个任务,1分钟执行一次，程序有check_self的判断
 * 2.优雅退出命令:  master检测侦听了USR2信号，收到信号后会通知所有子进程，子进程完成当前任务后会自动退出
