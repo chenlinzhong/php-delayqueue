@@ -448,8 +448,13 @@ class DqCurl {
         $this->load_userpwd();
 
         if ($this->method) {
-            curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, strtoupper($this->method));
-            $this->curl_cli .= " -X \"{$this->method}\"";
+            if(strtoupper(trim($this->method))=='POST'){
+                curl_setopt($this->ch, CURLOPT_POST, 1);
+                $this->curl_cli .= " -X \"{$this->method}\"";
+            }else {
+                curl_setopt($this->ch, CURLOPT_CUSTOMREQUEST, strtoupper($this->method));
+                $this->curl_cli .= " -X \"{$this->method}\"";
+            }
         }
         $this->curl_cli .= " \"" . $this->url . ($this->query_string ? '?' . $this->query_string : '') . "\"";
     }
