@@ -21,6 +21,8 @@ $data=array(
     'fix_time'=>date('Y-m-d 23:50:50'),
 );
 
+$time = msectime();
+
 //添加
 $boolRet = $dqClient->add($topic, $data);
 echo 'add耗时:'.(msectime() - $time)."ms\n";
