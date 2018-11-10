@@ -266,7 +266,7 @@
 </div>
 </div>
 <div style="background-color: gray;width: 100%;height: 40px;position: fixed;bottom: 0;color: white;padding-top: 10px;float: right;padding-left: 20px">
-    <a href="https://github.com/chenlinzhong/php-delayqueue" style="color: #666">Github</a> | designed 2018.09 by clz
+    <a href="https://github.com/chenlinzhong/php-delayqueue" style="color: #666">Github</a> | designed 2018.09 
 </div>
 </body>
 </html>
