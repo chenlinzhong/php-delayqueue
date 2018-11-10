@@ -105,7 +105,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label for="lastname" class="col-sm-2 control-label ">回掉通知url</label>
+                <label for="lastname" class="col-sm-2 control-label ">回调通知url</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control callback" id="lastname"
                            placeholder="请输入地址" style="width: 200px" value="{$get['callback']}">
@@ -137,7 +137,7 @@
                 <div class="col-sm-10">
                     <input type="text" class="form-control email" id="lastname"
                            placeholder="请输入邮箱地址" style="width: 200px" value="{$get['email']}">
-                    备注:(回掉接口出现问题，dns解析超时,接口超时，302错误邮件通知)
+                    备注:(回调接口出现问题，dns解析超时,接口超时，302错误邮件通知)
                 </div>
             </div>
             <div class="form-group">
@@ -172,7 +172,7 @@
                 <th>编号</th>
                 <th>名称</th>
                 <th>topic</th>
-                <th>回掉地址</th>
+                <th>回调地址</th>
                 <th>超时时间</th>
                 <th>延迟时间(单位:s)</th>
                 <th>异常通知地址</th>
