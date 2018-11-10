@@ -130,7 +130,11 @@ class DqModule{
                 $http_request->set_connect_timeout(1000);
                 $http_request->set_timeout($timeout);
                 foreach ($params as $k=>$v) {
-                    $http_request->add_query_field($k, $v);
+                    if(strtolower(trim($method))=='post'){
+                        $http_request->add_post_field($k, $v);
+                    }else {
+                        $http_request->add_query_field($k, $v);
+                    }
                 }
                 $http_request->send();
                 $response = $http_request->response_content;
