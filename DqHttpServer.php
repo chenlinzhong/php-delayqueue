@@ -24,12 +24,9 @@ $phpBin=DqConf::$phpBin;
 $host = DqConf::getLocalHost();
 
 if(isset($_SERVER['argv'][1])  && $_SERVER['argv'][1]=='--port' && is_numeric($_SERVER['argv'][2])){
-    DqConf::$port = $_SERVER['argv'][2];
+    $port = $_SERVER['argv'][2];
 }
 
-if(empty($port)){
-    $port = DqConf::$http_port;
-}
 
 /**
  * 指定web目录
