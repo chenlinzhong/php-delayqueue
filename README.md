@@ -139,7 +139,7 @@ redis信息格式：host:port:auth 比如 127.0.0.1:6379:12345
 
     1.接口返回为空默认重试
     2.满足指定返回表达会重试，res表示返回的json数组，比如:
-    回调接口返回json串：{"code":200,"data":{"status":2,"msg":"返回失败"}}，如果以下条件满足则会重试
+    回调接口返回json串：{"code":200,"data":{"status":2,"msg":"返回失败"}}，重试条件可以这样写
         {res.code}!=200 
         {res.code}!=200 && {res.data.status}!=2 
         {res.code}==200 && {res.data.status}==2 || {res.data.msg}=='返回失败'
