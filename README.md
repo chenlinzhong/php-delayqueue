@@ -125,7 +125,7 @@ consumer消费流程:
 访问:http://127.0.0.1:8088,出现配置界面
 ![image](./images/index.png)
 
-redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
+redis信息格式：host:port:auth 比如 127.0.0.1:6379:12345
 
 
 ##### stop4:配置告信息(比如redis宕机)
@@ -139,8 +139,9 @@ redis信息格式：host:post:auth 比如 127.0.0.1:6379:12345
 
     1.接口返回为空默认重试
     2.满足指定返回表达会重试，res表示返回的json数组，比如:
-        {res.code}==200 
-        {res.code}==200 && {res.data.status}==2 
+    回调接口返回json串：{"code":200,"data":{"status":2,"msg":"返回失败"}}，如果以下条件满足则会重试
+        {res.code}!=200 
+        {res.code}!=200 && {res.data.status}!=2 
         {res.code}==200 && {res.data.status}==2 || {res.data.msg}=='返回失败'
 
 ![image](./images/topiclist.png)
