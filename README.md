@@ -148,8 +148,11 @@ redis信息格式：host:port:auth 比如 127.0.0.1:6379:12345
 
 ##### step6:启动服务进程:   
 
-> php DqInit.php --port 6789 
-看到如下信息说明启动成功
+> php DqInit.php --port 6789 &
+
+
+执行 ps -ef | grep dq 看到如下信息说明启动成功
+
 ![image](./images/list.png)
 
 ##### step7: 写入数据，参考demo.php 
