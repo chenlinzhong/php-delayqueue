@@ -31,13 +31,13 @@ try {
             $v['online_desc'] ='<span style="color:red;">连接失败</span>';
         }
         try {
-            $v['total_nums'] = intval($redis->get(DqRedis::TOTAL_WRITE_NUMS));
-            $v['notify_nums'] = intval($redis->get(DqRedis::TOTAL_NOTIFY_NUMS));
+            $v['total_nums'] = DqRedis::get_nums('redis:'.$v['id'],DqRedis::TOTAL_WRITE_NUMS);
+            $v['notify_nums'] = DqRedis::get_nums('redis:'.$v['id'],DqRedis::TOTAL_NOTIFY_NUMS);
             $redisInfo = $redis->info();
             $v['used_memory_human'] = $redisInfo['used_memory_human'];
             $v['redis_version'] = $redisInfo['redis_version'];
             $v['rdb_last_save_time'] = date('Y-m-d H:i:s',$redisInfo['last_save_time']);
-            $v['total_del'] = intval($redis->get(DqRedis::TOTAL_DELETE_NUMS));
+            $v['total_del'] = DqRedis::get_nums('redis:'.$v['id'],DqRedis::TOTAL_DELETE_NUMS);
         }catch (Exception $e){
 
         }

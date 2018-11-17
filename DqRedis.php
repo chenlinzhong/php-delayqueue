@@ -358,13 +358,15 @@ class DqRedis{
                     $id = $redis['master']['id'];
                     if(isset($buf[$id])) {
                         $incrs = $buf[$id];
-                        $objRedis = self::connect($redis, 'master', false);
                         foreach ($incrs as $k => $v) {
-                            if($objRedis->incrby($k, $v)){
+                            $k1='redis:'.$id.':'.$k;
+                            $sql='insert into dq_stat set u_key="%s",num="%s",create_time="%s" on duplicate key update num=num+%s';
+                            $sql = sprintf($sql,$k1,$v,date('Y-m-d H:i:s'),$v);
+                            $is_incr_succ=DqMysql::getDbInstance()->exec($sql);
+                            if($is_incr_succ){
                                 unset($buf[$id][$k]); //删除已写入的
                             }else{
-                                self::connect($redis, 'master', true); //强制重新连接
-                                DqLog::writeLog("redis_self_incr fail,$k, $v,buf=".json_encode($buf),DqLog::LOG_TYPE_EXCEPTION);
+                                DqLog::writeLog("redis_self_incr fail,$k, $v,buf=".json_encode($buf).',sql='.$sql,DqLog::LOG_TYPE_EXCEPTION);
                             }
                         }
                     }
@@ -372,7 +374,9 @@ class DqRedis{
                     DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
                 }
             }
+
             $time = time();
+            return true;
         }catch (Exception $e){
             DqLog::writeLog('redis_self_incr fail,msg=' . $e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
             return false;
@@ -402,14 +406,14 @@ class DqRedis{
             return true;
         }
         try {
-            $server = DqConf::getRedisServer();
-            $redis = $server[0];
-            $objRedis = self::connect($redis, 'master', false);
+
             foreach ($buf as $key => $incr) {
                 try {
-                    if (!$objRedis->hincrby('dq_nums', $key, $incr)) {
-                        self::connect($redis, 'master', true); //强制重新连接
-                        DqLog::writeLog("incr_nums fail $id,$key,$incr,buf=".json_encode($buf), DqLog::LOG_TYPE_EXCEPTION);
+                    $sql='insert into dq_stat set u_key="%s",num="%s",create_time="%s" on duplicate key update num=num+%s';
+                    $sql = sprintf($sql,$key,$incr,date('Y-m-d H:i:s'),$incr);
+                    $is_incr_succ=DqMysql::getDbInstance()->exec($sql);
+                    if (!$is_incr_succ) {
+                        DqLog::writeLog("incr_nums fail $id,$key,$incr,buf=".json_encode($buf).',sql='.$sql, DqLog::LOG_TYPE_EXCEPTION);
                     }else{
                         unset($buf[$key]); //已写入的删除
                     }
@@ -429,11 +433,9 @@ class DqRedis{
 
     public static function get_nums($id,$key){
         try {
-            $server = DqConf::getRedisServer();
-            $redis = $server[0];
-            $objRedis = self::connect($redis, 'master', false);
             $key = $id . ':' . $key;
-            return $objRedis->hget('dq_nums', $key);
+            $data=DqMysql::select('dq_stat','u_key="'.$key.'"');
+            return isset($data[0]['num']) ? $data[0]['num']:0;
         }catch (Exception $e){
             DqLog::writeLog("get_nums fail $id,$key,msg=".$e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
             return 0;

@@ -11,7 +11,7 @@ DqMain::check_self(DqConf::DQ_MASTER);
 /**
  * 设置listen端口
  */
-if($_SERVER['argv'][1]=='--port' && is_numeric($_SERVER['argv'][2])){
+if(isset($_SERVER['argv'][1]) && $_SERVER['argv'][1]=='--port' && is_numeric($_SERVER['argv'][2])){
     DqConf::$port = $_SERVER['argv'][2];
 }
 
