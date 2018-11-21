@@ -1,5 +1,5 @@
 <?php
-define(WEB_ROOT,dirname(__FILE__));
+define('WEB_ROOT',dirname(__FILE__));
 include_once dirname(__FILE__).'/../DqLoader.php';
 
 require WEB_ROOT.'/libs/Smarty.class.php';
@@ -36,7 +36,7 @@ try {
             $redisInfo = $redis->info();
             $v['used_memory_human'] = $redisInfo['used_memory_human'];
             $v['redis_version'] = $redisInfo['redis_version'];
-            $v['rdb_last_save_time'] = date('Y-m-d H:i:s',$redisInfo['last_save_time']);
+           // $v['rdb_last_save_time'] = date('Y-m-d H:i:s',$redisInfo['last_save_time']);
             $v['total_del'] = DqRedis::get_nums('redis:'.$v['id'],DqRedis::TOTAL_DELETE_NUMS);
         }catch (Exception $e){
 
