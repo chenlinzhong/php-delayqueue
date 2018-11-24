@@ -249,6 +249,40 @@ bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：4901034
 
 
 
+【更新】
+
+11.24：测试网络框架切换到swoole和使用异步swoole_redis带来的性能改变情况
+
+把dqserver的逻辑基于swoole重新写了一遍，测试机(内存4G,cpu个数4)
+
+启动sever: 
+   >  php test_swoole_server.php  9055
+   
+压测: 
+   >  php test_swoole_bench.php 100 56
+
+
+* 原生dq-server: qps 2200  
+* 基于swoole&swoole_redis: qps 5600
+
+写入性能提升:2.6倍
+
+引入swoole性能提升比较明显，不过目前暂时不打算把server改为swoole的方式，主要基于以下考虑
+
+* 1.目前我们线上单个示例的qps3000，部署了两个，6000ps可以满足我们大部分场景
+* 2.目前对swoole处于了解的过程
+
+[todo]
+
+对队列分优先级，保证高优任务优先消费。。
+
+
+
+
+
+   
+    
+
 
 
 
