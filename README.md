@@ -248,13 +248,11 @@ bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：4901034
 
 
 
+### [更新]
 
+2018.11.24：测试网络框架切换到swoole和使用异步swoole_redis带来的性能改变情况
 
-###【更新】
-
-11.24：测试网络框架切换到swoole和使用异步swoole_redis带来的性能改变情况
-
-把dqserver的逻辑基于swoole重新写了一遍，测试机(内存4G,cpu个数4)
+把dqserver的主要逻辑基于swoole重新写了一遍，测试机(内存4G,cpu个数4)
 
 启动sever: 
    >  php test_swoole_server.php  9055
