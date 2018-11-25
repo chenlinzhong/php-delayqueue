@@ -288,7 +288,7 @@
 </div>
 <br><br>
 <div style="background-color: gray;width: 100%;height: 40px;position:absolute;bottom:0;color: white;padding-top: 10px;float: right;padding-left: 20px">
-designed 2018.09 by clz
+    <a href="https://github.com/chenlinzhong/php-delayqueue" style="color: white">Github</a> | designed 2018.09
 </div>
 </body>
 </html>
