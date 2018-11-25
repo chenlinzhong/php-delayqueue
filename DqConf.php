@@ -48,9 +48,11 @@ class DqConf{
     const DQ_HTTP_SERVER   = 'dq-http-server';
 
     /**
-     * 模块进程个数配置
+     * 消费进程数
      */
-    static $consume_nums=5;
+    static $consume_nums=10;
+
+    //异常重复通知次数
     static $notify_exp_nums=10;
 
     static $config_refresh=300;  //添加redis组，和topic之后，生效时长
