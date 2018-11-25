@@ -4,6 +4,7 @@ include_once dirname(__FILE__).'/../DqLoader.php';
 
 require WEB_ROOT.'/libs/Smarty.class.php';
 
+ini_set('display_errors','off');
 
 try {
     $smarty = new Smarty;
@@ -77,6 +78,7 @@ try {
             $list['online_status']=1;
             $list['status_desc']='<span style="color:red;">已下线</span>';
         }
+        $list['priority_name'] = DqConf::$priorityName[$list['priority']];
     }
     $topicTotal = DqMysql::selectCount('dq_topic', $strCondition);
 

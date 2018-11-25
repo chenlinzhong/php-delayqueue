@@ -1,5 +1,6 @@
 <?php
 include_once 'DqLog.php';
+include_once 'DqException.php';
 
 class DqComm{
     static $max_package_size=4096;  

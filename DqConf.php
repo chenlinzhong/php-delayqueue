@@ -29,7 +29,7 @@ class DqConf{
 
     static $max_connection=2000;
     static $redis_ping_interval=100;
-    static $flush_incr_interval=30;  /*缓存计数时间*/  
+    static $flush_incr_interval=10;  /*缓存计数时间*/
 
 
     /**
@@ -59,6 +59,23 @@ class DqConf{
      * php bin文件路径
      */
     static $phpBin='/usr/local/bin/php';
+
+
+    //队列优先级设置
+    const TASK_PRIORITY_HIGH=1;
+    const TASK_PRIORITY_NORMAL=2;
+    const TASK_PRIORITY_LOW=3;
+    static $priorityConfig=array(
+        self::TASK_PRIORITY_HIGH=>5,
+        self::TASK_PRIORITY_NORMAL=>3,
+        self::TASK_PRIORITY_LOW=>2,
+    );
+
+    static $priorityName=array(
+        self::TASK_PRIORITY_HIGH=>'高',
+        self::TASK_PRIORITY_NORMAL=>'中',
+        self::TASK_PRIORITY_LOW=>'低',
+    );
 
 
     /**

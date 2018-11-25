@@ -110,7 +110,8 @@ $(function () {
             'topic':$('#topic_add').find('.topic').val(),
             'method':$('.method').val(),
             'id':$('#task_id').val(),
-            're_notify_flag':$('.re_notify_flag').val()
+            're_notify_flag':$('.re_notify_flag').val(),
+            'priority':$('#priority').val()
         };
         var post_url='/add.php?op=topic_add';
         $.ajax({

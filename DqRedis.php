@@ -55,10 +55,10 @@ class DqRedis{
         }catch (Exception $e){
             DqLog::writeLog($e->getMessage().'line:'.$e->getLine(),DqLog::LOG_TYPE_EXCEPTION);
         }
-        $redis = new Redis();
+            $redis = new Redis();
         $redis->rid = $rid;
         $redis->connect($host, $port, 3);
-        if(!empty($auth)){
+        if (!empty($auth)) {
             $redis->auth($auth);
         }
         self::$instance[$key]  = $redis;
@@ -79,8 +79,8 @@ class DqRedis{
         }
     }
 
-    public static function getReadyQueueKey(){
-        return DqConf::$prefix.'ready_queue';
+    public static function getReadyQueueKey($priority){
+        return DqConf::$prefix.$priority.'ready_queue';
     }
 
 
@@ -167,8 +167,11 @@ class DqRedis{
                         }
                         $tid = key($data);
                         $score = $data[$tid];
+                        list($topic,$id) = self::parse_tid($tid);
                         if ($score < time()) { //第一个元素到时间了移动到就绪队列
-                            $readyKey = self::getReadyQueueKey();
+                            $topRegistered = DqModule::getRegisterTopic();
+                            $priority = $topRegistered[$topic]['priority'];
+                            $readyKey = self::getReadyQueueKey($priority);
                             $lockKey  = 'lock:'.$tid;
                             if($objRdis->setnx($lockKey,1)) {  //加锁保证移动数据操作原子性
                                 DqLog::writeLog('get lock succ,id='.$tid);
@@ -265,33 +268,41 @@ class DqRedis{
     public static function consume(){
         DqMain::install_sig_usr1();
         while(true) {
+            $consume_nums_per_cycle=0;
+            $redisServerList=array();
             try {
                 $redisServerList = self::getAllRedisServer();
                 foreach ($redisServerList as $redis) {
-                    $key = self::getReadyQueueKey();
-                    while (true) {
-                        pcntl_signal_dispatch();
-                        DqMain::sig_stop_check();
-                        $tid = $redis->lpop($key);
-                        if(empty($tid)){
-                            self::incr_force();
-                            break;
+                    foreach (DqConf::$priorityConfig as $priority=>$nums) {
+                        $key = self::getReadyQueueKey($priority);
+                        while ($nums--) {
+                            $consume_nums_per_cycle ++;
+                            pcntl_signal_dispatch();
+                            DqMain::sig_stop_check();
+                            $tid = $redis->lpop($key);
+                            if (empty($tid)) {
+                                self::incr_force();
+                                break;
+                            }
+                            DqLog::writeLog('ready pop tid=' . $tid);
+                            $body = self::getBody($tid);
+                            if (empty($body)) {
+                                continue;
+                            }
+                            DqLog::writeLog('ready pop tid=' . $tid . ' body=' . json_encode($body));
+                            self::redis_self_incr($redis->rid, self::TOTAL_NOTIFY_NUMS);
+                            list($topic) = self::parse_tid($tid);
+                            DqModule::notify($topic, $tid, $body);
                         }
-                        DqLog::writeLog('ready pop tid=' . $tid);
-                        $body = self::getBody($tid);
-                        if (empty($body)) {
-                            continue;
-                        }
-                        DqLog::writeLog('ready pop tid=' . $tid . ' body=' . json_encode($body));
-                        self::redis_self_incr($redis->rid,self::TOTAL_NOTIFY_NUMS);
-                        list($topic) = self::parse_tid($tid);
-                        DqModule::notify($topic, $tid, $body);
                     }
                 }
             } catch (Exception $e) {
                 DqLog::writeLog($e->getMessage(), DqLog::LOG_TYPE_EXCEPTION);
             }
-            sleep(1);
+            //如果所有redis中都没有可消费的消息，则等待1s
+            if($consume_nums_per_cycle==count($redisServerList)*count(DqConf::$priorityConfig)) {
+                sleep(1);
+            }
         }
     }
 

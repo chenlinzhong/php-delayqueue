@@ -18,19 +18,20 @@ CREATE TABLE `dq_redis` (
 ) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 #存储注册信息
 CREATE TABLE `dq_topic` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `t_name` varchar(1024) NOT NULL DEFAULT '',
-  `delay` int(11) NOT NULL DEFAULT '0',
-  `callback` varchar(1024) NOT NULL DEFAULT '',
-  `timeout` int(11) NOT NULL DEFAULT '3000',
-  `email` varchar(1024) NOT NULL DEFAULT '',
-  `topic` varchar(255) NOT NULL DEFAULT '',
-  `re_notify_flag` varchar(1024) NOT NULL DEFAULT '重试标记',
-  `createor` varchar(1024) NOT NULL DEFAULT '',
-  `status` tinyint(4) NOT NULL DEFAULT '1',
-  `method` varchar(32) NOT NULL DEFAULT 'GET',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
+ `id` int(11) NOT NULL AUTO_INCREMENT,
+ `t_name` varchar(1024) NOT NULL DEFAULT '',
+ `delay` int(11) NOT NULL DEFAULT '0',
+ `callback` varchar(1024) NOT NULL DEFAULT '',
+ `timeout` int(11) NOT NULL DEFAULT '3000',
+ `email` varchar(1024) NOT NULL DEFAULT '',
+ `topic` varchar(255) NOT NULL DEFAULT '',
+ `re_notify_flag` varchar(1024) NOT NULL DEFAULT '重试标记',
+ `createor` varchar(1024) NOT NULL DEFAULT '',
+ `status` tinyint(4) NOT NULL DEFAULT '1',
+ `method` varchar(32) NOT NULL DEFAULT 'GET',
+ `priority` int(11) NOT NULL DEFAULT '2',
+ PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `dq_stat` (
  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY key,

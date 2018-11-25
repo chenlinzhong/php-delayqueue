@@ -133,6 +133,17 @@
                 </div>
             </div>
             <div class="form-group">
+                <label for="lastname" class="col-sm-2 control-label ">优先级</label>
+                <div class="col-sm-10">
+                    <select id="priority">
+                        <option value="1"  {if $get['priority'] =='1' }selected = "selected"{/if}>高</option>
+                        <option value="2" {if $get['priority'] =='2' }selected = "selected"{/if}>中</option>
+                        <option value="3" {if $get['priority'] =='3' }selected = "selected"{/if}>低</option>
+                    </select>
+                    备注：优先级越高越快被消费
+                </div>
+            </div>
+            <div class="form-group">
                 <label for="lastname" class="col-sm-2 control-label ">异常通知</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control email" id="lastname"
@@ -176,6 +187,7 @@
                 <th>超时时间</th>
                 <th>延迟时间(单位:s)</th>
                 <th>异常通知地址</th>
+                <th>优先级</th>
                 <th>总写入</th>
                 <th>总删除</th>
                 <th>总消费</th>
@@ -198,6 +210,7 @@
                 <td>{$topic['timeout']}</td>
                 <td>{$topic['delay']}</td>
                 <td>{$topic['email']|default:'-'}</td>
+                <td>{$topic['priority_name']|default:'-'}</td>
                 <td>{$topic['total_write']|default:0}</td>
                 <td>{$topic['total_del']|default:0}</td>
                 <td>{$topic['total_notfiy']|default:0}</td>

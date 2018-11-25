@@ -32,6 +32,7 @@ switch ($op){
             'createor'=>$_GET['createor'],
             'method'=>$_GET['method'],
             're_notify_flag'=>$_GET['re_notify_flag'],
+            'priority'=>$_GET['priority'],
         );
         if($_GET['id']>0) {
             if (DqMysql::updateData('dq_topic', $data,'id='.$_GET['id'])) {
