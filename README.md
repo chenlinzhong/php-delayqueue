@@ -261,6 +261,7 @@ bug、修改建议、疑惑都欢迎提在issue中，或加入本人qq：4901034
 压测: 
    >  php test_swoole_bench.php 100 56
 
+结果:
 
 * 原生dq-server: qps 2200  
 * 基于swoole&swoole_redis: qps 5600
