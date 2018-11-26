@@ -106,7 +106,7 @@ consumer消费流程:
 
 #### 六、部署
 
-环境依赖：`PHP 5.4+  安装sockets，redis，pcntl,pdo_mysql 拓展`  
+环境依赖：`PHP 5.5+  安装sockets，redis，pcntl,pdo_mysql 拓展`  
 
 ps: 熟悉docker的同学可以直接用镜像: shareclz/php7.2.14 里面包含了所需拓展
 
