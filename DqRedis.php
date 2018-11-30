@@ -195,9 +195,10 @@ class DqRedis{
                             }else{
                                 DqLog::writeLog('get lock fail,tid='.$tid);
                             }
+                        }else{
+                            break;
                         }
                         $start++;
-
                     }
                 }
             } catch (Exception $e) {
