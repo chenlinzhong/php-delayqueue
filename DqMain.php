@@ -13,11 +13,16 @@ class DqMain
                 DqLog::writeLog('server fork fail', DqLog::LOG_TYPE_EXCEPTION);
             } elseif ($pid) {
             } else {// 子进程处理
-                DqLog::writeLog('start server succ');
+                register_shutdown_function('dq_exception_quit_handler');
+                $id = uniqid();
+                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 cli_set_process_title(DqConf::DQ_SERVER);
+                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 DqMain::$pid = posix_getpid();
+                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 $server = new DqServer();
-                $server->run();
+                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
+                $server->run($id);
                 exit;
             }  
         }
@@ -114,6 +119,7 @@ class DqMain
                     DqLog::writeLog('fork fail',DqLog::LOG_TYPE_EXCEPTION);
                 } elseif ($pid) {
                 } else {// 子进程处理
+                    register_shutdown_function('dq_exception_quit_handler');
                     cli_set_process_title(DqConf::DQ_TIMER.'_'.$i);
                     DqMain::$pid = posix_getpid();
                     DqRedis::timer($i);
@@ -158,6 +164,7 @@ class DqMain
             } elseif ($pid) {
 
             } else {// 子进程处理
+                register_shutdown_function('dq_exception_quit_handler');
                 cli_set_process_title(DqConf::DQ_CONSUME.'_'.$i);
                 DqMain::$pid = posix_getpid();
                 DqRedis::consume();
@@ -217,6 +224,14 @@ class DqMain
             DqLog::writeLog('check_run_time over max seconds,will exit');
         }
     }
+}
+
+//程序异常退出回掉
+function dq_exception_quit_handler(){
+    $info = error_get_last();
+    $pname = cli_get_process_title();
+    DqLog::writeLog('dq_exception_quit_handler,pname='.$pname.':'.json_encode($info),DqLog::LOG_TYPE_EXCEPTION);
+    DqRedis::incr_force(); //刷新统计数据
 }
 
 function dq_quite_exit_sig_handler($sigNo){

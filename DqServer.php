@@ -76,17 +76,22 @@ class DqServer{
         return $arr;
     }
 
-    public  function run(){
+    public  function run($id=0){
         try {
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             $fd = $this->get_fd();
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             if($fd===false){
                 throw  new DqException('socket error,will exitd');
             }
-
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             list($ip,$port) = $this->getIpPortFromFd($fd);
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             echo "listen on $ip:$port,warting...";
             self::wirteLog("listen on $ip:$port,warting...");
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             DqMain::install_sig_usr1();
+            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             while(true){
                 try{
                     $read = array_merge(array($this->fd),$this->getAllClientsFd());

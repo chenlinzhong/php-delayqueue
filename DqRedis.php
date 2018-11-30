@@ -419,6 +419,9 @@ class DqRedis{
         try {
 
             foreach ($buf as $key => $incr) {
+                if($incr<=0){
+                    continue;
+                }
                 try {
                     $sql='insert into dq_stat set u_key="%s",num="%s",create_time="%s" on duplicate key update num=num+%s';
                     $sql = sprintf($sql,$key,$incr,date('Y-m-d H:i:s'),$incr);
