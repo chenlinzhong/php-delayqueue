@@ -73,8 +73,13 @@ class DqMysql
             $sql .= ' where ' . $condition;
         }
         $start = ($page - 1) * $size;
+        $sql .= ' order by id desc ';
         $sql .= ' limit ' . $start . ',' . $size;
-        $statement = self::getDbInstance()->prepare($sql);
+        $obj = self::getDbInstance();
+        if(empty($obj)){
+            return array();
+        }
+        $statement = $obj->prepare($sql);
         $statement->execute();
         $arr = $statement->fetchAll(PDO::FETCH_ASSOC);
         return $arr;
@@ -86,7 +91,12 @@ class DqMysql
         if (!empty($condition)) {
             $sql .= ' where ' . $condition;
         }
-        $statement = self::getDbInstance()->prepare($sql);
+        $sql .= ' order by id desc ';
+        $obj = self::getDbInstance();
+        if(empty($obj)){
+            return 0;
+        }
+        $statement = $obj->prepare($sql);
         $statement->execute();
         $arr = $statement->fetchAll(PDO::FETCH_ASSOC);
         return isset($arr[0]['total']) ? $arr[0]['total'] : 0;
