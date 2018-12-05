@@ -12,7 +12,11 @@ class DqLog{
 
 
     public static function writeLog($str,$flag=self::LOG_TYPE_NORMAL){
-        $str = "[" . date('Y-m-d H:i:s') . "]PID=". DqMain::$pid.' '. $str;
+        $p_name='';
+        if(php_sapi_name()=='cli'){
+            $p_name = cli_get_process_title();
+        }
+        $str = "[" . date('Y-m-d H:i:s') . "]p_name=".$p_name.' '. $str;
         $dir  = self::getLogDir();  
         $seg=date('Ymd');
         switch ($flag) {
