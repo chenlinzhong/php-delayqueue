@@ -44,20 +44,24 @@ class DqComm{
     }
 
     public static function socket_wirte($fd,$data){
-        list($len,$data) = self::format_data($data);
-        if($len>=self::$max_package_size){
-            throw new DqException('data too long,str='.$data.' max_package_size='.self::$max_package_size);
-        }
-        while($len){
-            $nwrite   = socket_write($fd, $data, $len); //可能一次性写不完，需要多次写入
-            if($nwrite===false){ /*数据写入失败*/
-                throw  new DqException('socker error: data='.$data);
-            }else if($nwrite>0){
-                $len   -= $nwrite;
-                $data  = substr($data,$nwrite);
+        if(is_resource($fd)) {
+            list($len, $data) = self::format_data($data);
+            if ($len >= self::$max_package_size) {
+                DqLog::writeLog('data too long,str=' . $data . ' max_package_size=' . self::$max_package_size,DqLog::LOG_TYPE_EXCEPTION);
             }
+            while ($len) {
+                $nwrite = socket_write($fd, $data, $len); //可能一次性写不完，需要多次写入
+                if ($nwrite === false) { /*数据写入失败*/
+                    DqLog::writeLog('socker error: data=' . $data . ',fd=' . $fd . ',error=' . error_get_last(),DqLog::LOG_TYPE_EXCEPTION);
+                    return false;
+                } else if ($nwrite > 0) {
+                    $len -= $nwrite;
+                    $data = substr($data, $nwrite);
+                }
+            }
+            return true;
         }
-        return true;
+        return false;
     }
 
     public static function msectime() {
