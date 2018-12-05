@@ -55,7 +55,7 @@ class DqRedis{
         }catch (Exception $e){
             DqLog::writeLog($e->getMessage().'line:'.$e->getLine(),DqLog::LOG_TYPE_EXCEPTION);
         }
-            $redis = new Redis();
+        $redis = new Redis();
         $redis->rid = $rid;
         $redis->connect($host, $port, 3);
         if (!empty($auth)) {
@@ -174,8 +174,7 @@ class DqRedis{
                             $readyKey = self::getReadyQueueKey($priority);
                             $lockKey  = 'lock:'.$tid;
                             if($objRdis->setnx($lockKey,1)) {  //加锁保证移动数据操作原子性
-                                DqLog::writeLog('get lock succ,id='.$tid);
-                                DqLog::writeLog('data ready,data=' . json_encode($data));
+                                DqLog::writeLog('data ready,data=' . json_encode($data).',pos='.$start);
                                 if ($objRdis->zrem($bucketKey, $tid)) {
                                     if (!$objRdis->rpush($readyKey, $tid)) {
                                         $strMsg = 'move to ready queue failed,id=' . $tid . ',data=' . $objRdis->hget(self::getJobKey(), $tid);
@@ -183,9 +182,6 @@ class DqRedis{
                                     } else {
                                         DqLog::writeLog('data ready,data=' . json_encode($data) . ' move to queue succ,key=' . $readyKey);
                                     }
-                                } else {
-                                    $strMsg = 'del from bucket failed,id=' . $tid . ',score=' . date('Y-m-d H:i:s', $score) . ',data=' . $objRdis->hget(self::getJobKey(), $tid);
-                                    DqLog::writeLog($strMsg, DqLog::LOG_TYPE_EXCEPTION);
                                 }
                                 if($objRdis->delete($lockKey)){
                                    DqLog::writeLog('delete lock succ,key='.$lockKey);
@@ -199,6 +195,7 @@ class DqRedis{
                             break;
                         }
                         $start++;
+
                     }
                 }
             } catch (Exception $e) {
@@ -374,7 +371,11 @@ class DqRedis{
                             $k1='redis:'.$id.':'.$k;
                             $sql='insert into dq_stat set u_key="%s",num="%s",create_time="%s" on duplicate key update num=num+%s';
                             $sql = sprintf($sql,$k1,$v,date('Y-m-d H:i:s'),$v);
-                            $is_incr_succ=DqMysql::getDbInstance()->exec($sql);
+                            $obj = DqMysql::getDbInstance();
+                            if(empty($obj)){
+                                return true;
+                            }
+                            $is_incr_succ=$obj->exec($sql);
                             if($is_incr_succ){
                                 unset($buf[$id][$k]); //删除已写入的
                             }else{
@@ -426,7 +427,11 @@ class DqRedis{
                 try {
                     $sql='insert into dq_stat set u_key="%s",num="%s",create_time="%s" on duplicate key update num=num+%s';
                     $sql = sprintf($sql,$key,$incr,date('Y-m-d H:i:s'),$incr);
-                    $is_incr_succ=DqMysql::getDbInstance()->exec($sql);
+                    $obj = DqMysql::getDbInstance();
+                    if(empty($obj)){
+                        return true;
+                    }
+                    $is_incr_succ=$obj->exec($sql);
                     if (!$is_incr_succ) {
                         DqLog::writeLog("incr_nums fail $id,$key,$incr,buf=".json_encode($buf).',sql='.$sql, DqLog::LOG_TYPE_EXCEPTION);
                     }else{
