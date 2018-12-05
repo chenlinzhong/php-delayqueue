@@ -6,6 +6,8 @@ if(php_sapi_name()=='cli') {
     error_reporting(E_ALL);
 }
 
+ini_set('default_socket_timeout', -1); //不超时
+
 DqMain::check_self(DqConf::DQ_MASTER);
 
 /**
