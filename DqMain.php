@@ -14,17 +14,12 @@ class DqMain
             } elseif ($pid) {
             } else {// 子进程处理
                 register_shutdown_function('dq_exception_quit_handler');
-                $id = uniqid();
-                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 cli_set_process_title(DqConf::DQ_SERVER);
-                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 DqMain::$pid = posix_getpid();
-                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
                 $server = new DqServer();
-                DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
-                $server->run($id);
+                $server->run();
                 exit;
-            }  
+            }
         }
     }
 
