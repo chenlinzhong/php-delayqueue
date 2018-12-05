@@ -29,7 +29,7 @@ class DqConf{
 
     static $max_connection=2000;
     static $redis_ping_interval=100;
-    static $flush_incr_interval=10;  /*缓存计数时间*/
+    static $flush_incr_interval=5;  /*缓存计数时间*/
 
 
     /**
