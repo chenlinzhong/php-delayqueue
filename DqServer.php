@@ -3,27 +3,28 @@ include_once 'DqLoader.php';
 
 class DqServer{
     private $fd = null;
-    private $topicConsumeClientList=array();
 
     private $clientsObjects=array(); //所有客户端对象
 
 
     public function  createClientsObject($newfd){
-        if(count($this->clientsObjects)>=DqConf::$max_connection){
-            Tool_Log_Commlog::writeLog('over max connection '.DqConf::$max_connection.',will reject',DqLog::LOG_TYPE_EXCEPTION);
-            socket_close($newfd);
-            return ;
+        if(is_resource($newfd)) {
+            if (count($this->clientsObjects) >= DqConf::$max_connection) {
+                DqLog::writeLog('over max connection ' . DqConf::$max_connection . ',will reject', DqLog::LOG_TYPE_EXCEPTION);
+                socket_close($newfd);
+                return false;
+            }
+            list($ip, $port) = $this->getIpPortFromFd($newfd);
+            $clients = array(
+                'fd' => $newfd,
+                'ip' => $ip,
+                'port' => $port,
+                'create_time' => date('Y-m-d H:i:s'),
+            );
+            $key = $this->getClientKey($newfd);
+            $this->clientsObjects[$key] = $clients;
+            self::wirteLog("client_create {$ip}:{$port},clients=" . count($this->clientsObjects).',maxfd='.intval($newfd));
         }
-        list($ip,$port) = $this->getIpPortFromFd($newfd);
-        self::wirteLog("client_create {$ip}:{$port}");
-        $clients=array(
-            'fd'=> $newfd,
-            'ip'=>$ip,
-            'port'=>$port,
-            'create_time'=>date('Y-m-d H:i:s'),         
-        );
-        $key = $this->getClientKey($newfd);
-        $this->clientsObjects[$key] = $clients;
     }
 
     //根据fd获取在对象数组中的下标
@@ -32,21 +33,16 @@ class DqServer{
         return sprintf('fd:%s',$num);
     }
 
-
-    //获取对象
-    public function getClientsObject($newfd){
-        $key = $this->getClientKey($newfd);
-        return isset($this->clientsObjects[$key]) ? $this->clientsObjects[$key]: false;
-    }
-
     //删除对象
     public function delClientsObject($newfd){
-        socket_close($newfd);
-        //s$strClients = $this->clientToStr($newfd);
+        if(is_resource($newfd)) {
+            socket_close($newfd);
+        }
         $key = $this->getClientKey($newfd);
-        unset($this->clientsObjects[$key]);
-        $this->del_topic_client($newfd);
-        //self::wirteLog('client_del,client info='.$strClients);
+        if(isset($this->clientsObjects[$key])) {
+            unset($this->clientsObjects[$key]);
+            DqLog::writeLog('now_clients,clients='.count($this->clientsObjects));
+        }
     }
 
     //序列化对象
@@ -76,22 +72,19 @@ class DqServer{
         return $arr;
     }
 
-    public  function run($id=0){
+    public  function run(){
         try {
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             $fd = $this->get_fd();
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             if($fd===false){
                 throw  new DqException('socket error,will exitd');
             }
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
             list($ip,$port) = $this->getIpPortFromFd($fd);
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
-            echo "listen on $ip:$port,warting...";
             self::wirteLog("listen on $ip:$port,warting...");
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
+            //线上不能使用echo输出，会导致EIO报错，程序异常退出
+            //echo "listen on $ip:$port,warting..."."\n";
             DqMain::install_sig_usr1();
-            DqLog::writeLog('start server succ'.__LINE__.' id:'.$id);
+            //SIGPIPE信号忽略
+            pcntl_signal(SIGPIPE,SIG_IGN);
             while(true){
                 try{
                     $read = array_merge(array($this->fd),$this->getAllClientsFd());
@@ -112,8 +105,6 @@ class DqServer{
                     
                     //处理请求
                     $this->handle_request($read);
-                    //处理回复
-                    $this->sendReply();
                 }catch (Exception $e){
                     self::wirteLog($e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
                 }
@@ -137,12 +128,15 @@ class DqServer{
 
     //处理消息
     public function handle_msg($cfd,$arr){
+        if(!is_resource($cfd)){
+            return false;
+        }
         switch ($arr['cmd']) {
             case 'add':
                 if(DqRedis::handle($arr)) {
-                    $this->addReply($cfd, 1, 'succ');
+                    $this->sendReply($cfd, 1, 'succ');
                 }else{
-                    $this->addReply($cfd, 0, 'fail');
+                    $this->sendReply($cfd, 0, 'fail');
                 }
                 break;
             case 'del':
@@ -152,9 +146,9 @@ class DqServer{
 
                 $ret = DqRedis::delMsg($topic,$tid,true);
                 if($ret){
-                    $this->addReply($cfd,1,'succ');
+                    $this->sendReply($cfd,1,'succ');
                 }else{
-                    $this->addReply($cfd,0,'fail');
+                    $this->sendReply($cfd,0,'fail');
                 }
                 break;
             case 'get':
@@ -163,9 +157,9 @@ class DqServer{
                 $tid  = DqRedis::create_tid($topic,$id);
                 $result = DqRedis::getBody($tid);
                 if(!empty($result)) {
-                    $this->addReply($cfd, 1, 'succ',$result);
+                    $this->sendReply($cfd, 1, 'succ',$result);
                 }else{
-                    $this->addReply($cfd, 0, 'fail');
+                    $this->sendReply($cfd, 0, 'fail');
                 }
                 break;
             default:
@@ -173,64 +167,13 @@ class DqServer{
         }
     }
 
-    public  function add_topic_client($topic,$fd){
-        $this->topicConsumeClientList[$topic][] = intval($fd);
-    }
 
-    public function del_topic_client($fd){
-        $fd = intval($fd);
-        $allTopics = array_keys($this->topicConsumeClientList);
-        foreach ($allTopics as $topic){
-            $this->topicConsumeClientList[$topic] = $this->array_del($fd,$this->topicConsumeClientList[$topic]);
-        }
-    }
 
-    static $readyToReplyfds=array();
-    public function addReply($newfd,$code,$msg='',$data=array()){
+    public function sendReply($fd,$code,$msg,$data=array()){
         $reply = array('code'=>$code,'msg'=>$msg,'data'=>$data);
-        $key = $this->getClientKey($newfd);
-        if(isset($this->clientsObjects[$key])){
-            $this->clientsObjects[$key]['reply']=$reply;
-            //记录需要回复的fd
-            if(!in_array($newfd,self::$readyToReplyfds)) {
-                self::$readyToReplyfds[] = $newfd;
-            }
-            return true;
-        }else{
-            DqLog::writeLog('fd='.intval($newfd).'not found fd,data='.json_encode($data),DqLog::LOG_TYPE_EXCEPTION);
-            return false;
-        }
-    }
-    public function getReply($newfd){
-        $key = $this->getClientKey($newfd);
-        if(isset($this->clientsObjects[$key]['reply'])){
-            return $this->clientsObjects[$key]['reply'];
-        }else{
-            DqLog::writeLog('fd='.intval($newfd).'not found fd getReply',DqLog::LOG_TYPE_EXCEPTION);
-            return false;
-        }
-    }
-
-    public function delReplay($newfd){
-        $key = $this->getClientKey($newfd);
-        //删除已经回复的fd
-        self::$readyToReplyfds = $this->array_del($newfd,self::$readyToReplyfds);
-        unset($this->clientsObjects[$key]['reply']);
-    }
-
-    public function sendReply(){
-        foreach (self::$readyToReplyfds as $fd){
-            $reponse = $this->getReply($fd);
-            if(empty($reponse)){
-                $this->delClientsObject($fd);
-                DqLog::writeLog($this->clientToStr($fd),DqLog::LOG_TYPE_EXCEPTION);
-            }
-            if(DqComm::socket_wirte($fd,$reponse) ===false){ //如果写入异常
-                $this->delClientsObject($fd);
-                DqLog::writeLog($this->clientToStr($fd).' response error,msg='.json_encode($reponse));
-            }else{
-                $this->delReplay($fd);
-            }
+        if(DqComm::socket_wirte($fd,$reply) ===false){ //如果写入异常
+            $this->delClientsObject($fd);
+            DqLog::writeLog($this->clientToStr($fd).' response error,msg='.json_encode($reply).' clients='.json_encode($this->clientsObjects),DqLog::LOG_TYPE_EXCEPTION);
         }
     }
 
@@ -239,7 +182,14 @@ class DqServer{
     public function check_new_connection(&$read){
         if(in_array($this->get_fd(),$read)){
             $newfd = socket_accept($this->get_fd());
-            $this->createClientsObject($newfd);
+            if(is_resource($newfd)){
+                $this->createClientsObject($newfd);
+            }else{
+                DqLog::writeLog('socket_accept failed');
+                $errorcode = socket_last_error();
+                $errormsg = socket_strerror($errorcode);
+                DqLog::writeLog('socket_accept failed,msg='.$errormsg,DqLog::LOG_TYPE_EXCEPTION);
+            }
         }
     }
 
