@@ -236,7 +236,7 @@ class DqServer{
                 socket_close($sfd);
                 throw  new DqException('socket_set_option failed reason:'.socket_strerror(socket_last_error()));
             }
-            $this->fd = $sfd;
+            $this->fd = $sfd;  
             return $sfd;
         }catch (DqException $e){
             self::wirteLog($e->getDqMessage(),DqLog::LOG_TYPE_EXCEPTION);
