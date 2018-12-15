@@ -14,6 +14,7 @@ class DqMain
             } elseif ($pid) {
             } else {// 子进程处理
                 register_shutdown_function('dq_exception_quit_handler');
+                DqLog::writeLog('start server succ');
                 cli_set_process_title(DqConf::DQ_SERVER);
                 DqMain::$pid = posix_getpid();
                 $server = new DqServer();
@@ -26,7 +27,7 @@ class DqMain
     static function master_install_usr2(){
         static  $install= 0;
         if(!$install) {
-            if(pcntl_signal(SIGUSR2, "dq_quite_exit_sig_handler")){
+            if(pcntl_signal(SIGUSR2, "dq_quite_exit_sig_handler",false)){
                 DqLog::writeLog('master install usr2 succ');
                 $install = 1;
             }else{
@@ -195,7 +196,7 @@ class DqMain
     }
 
     static function install_sig_usr1(){
-        if(pcntl_signal(SIGUSR1, "dq_exit_sig_handler")){
+        if(pcntl_signal(SIGUSR1, "dq_exit_sig_handler",false)){
             DqLog::writeLog('install sig handler succ,pid='.posix_getpid().',name='.cli_get_process_title());
         }else{
             DqLog::writeLog('install sig handler fail,pid='.posix_getpid().',name='.cli_get_process_title(),DqLog::LOG_TYPE_EXCEPTION);
@@ -245,6 +246,8 @@ function dq_exit_sig_handler($sigNo){
     }
 }
 
-
+function dq_broken_pipe_handler($sigNo){
+    DqLog::writeLog('dq_broken_pipe_handler',DqLog::LOG_TYPE_EXCEPTION);
+}
 
 

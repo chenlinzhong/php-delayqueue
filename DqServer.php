@@ -57,8 +57,19 @@ class DqServer{
     //获取所有客户端连接的fd
     public function getAllClientsFd(){
         $fds = array();
+        $time = time();
         foreach ($this->clientsObjects as $v){
-            array_push($fds,$v['fd']);
+            $cfd = $v['fd'];
+            $key = $this->getClientKey($cfd);
+            $client = isset($this->clientsObjects[$key]) ? $this->clientsObjects[$key] : array();
+            //超过5分钟断开连接
+            if(!empty($client) && ($time-strtotime($client['create_time']))>300){
+                $this->delClientsObject($cfd);
+                $strMsg = sprintf('clients over max time,will disconnect,ip=%s:%s',$client['ip'],$client['port']);
+                DqLog::writeLog($strMsg,DqLog::LOG_TYPE_EXCEPTION);
+                continue;
+            }
+            array_push($fds,$cfd);
         }
         return $fds;
     }
@@ -84,25 +95,23 @@ class DqServer{
             //echo "listen on $ip:$port,warting..."."\n";
             DqMain::install_sig_usr1();
             //SIGPIPE信号忽略
-            pcntl_signal(SIGPIPE,SIG_IGN);
+            pcntl_signal(SIGPIPE, SIG_IGN, false);
             while(true){
                 try{
-                    $read = array_merge(array($this->fd),$this->getAllClientsFd());
-                    socket_select($read, $write,  $exce, DqConf::get_socket_select_timeout());
-                    if(socket_last_error()==4){  //系统中断
-                        DqMain::$stop =1;
+                    pcntl_signal_dispatch();
+                    if(DqMain::$stop){
                         DqRedis::incr_force(); //刷新统计数据
-                        DqLog::writeLog('server Interrupted system call,will exit now ,bye... ');
-                        exit(0);
+                        DqMain::sig_stop_check();
                     }
+                    $read = array_merge(array($this->fd),$this->getAllClientsFd());
+                    @socket_select($read, $write,  $exce, DqConf::get_socket_select_timeout());
                     //刷新数据
-                    if(count($read)==0){
-                       DqRedis::incr_force(); //刷新统计数据
+                    if (count($read) == 0) {
+                        DqRedis::incr_force(); //刷新统计数据
                     }
                     //检测是否有新的链接过来
                     $this->check_new_connection($read);
-                    $read = $this->array_del($this->fd,$read);
-                    
+                    $read = $this->array_del($this->fd, $read);
                     //处理请求
                     $this->handle_request($read);
                 }catch (Exception $e){
@@ -173,7 +182,7 @@ class DqServer{
         $reply = array('code'=>$code,'msg'=>$msg,'data'=>$data);
         if(DqComm::socket_wirte($fd,$reply) ===false){ //如果写入异常
             $this->delClientsObject($fd);
-            DqLog::writeLog($this->clientToStr($fd).' response error,msg='.json_encode($reply).' clients='.json_encode($this->clientsObjects),DqLog::LOG_TYPE_EXCEPTION);
+            DqLog::writeLog('response error,msg='.json_encode($reply).' clients='.count($this->clientsObjects),DqLog::LOG_TYPE_EXCEPTION);
         }
     }
 

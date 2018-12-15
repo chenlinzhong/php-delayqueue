@@ -46,7 +46,10 @@ class DqRedis{
             if (!$force) {
                 if((time() - $time) > DqConf::$redis_ping_interval && isset(self::$instance[$key]) ){ //每个20秒心跳检测一次
                     $time = time();
-                    self::$instance[$key]->ping();  //如果连接断开这里会抛出异常, 耗时2-3ms
+                    if(self::$instance[$key]->ping()!='+PONG'){
+                        unset(self::$instance[$key]);
+                        DqLog::writeLog('redis disconnect and server will reconnect..',DqLog::LOG_TYPE_EXCEPTION);
+                    }
                 }
                 if (isset(self::$instance[$key]) ) {
                     return self::$instance[$key];
@@ -127,8 +130,8 @@ class DqRedis{
             }
             $body = json_encode($data['body']);
             $pipe = $redis->multi(Redis::PIPELINE);
-            $ret1 =  $pipe->hSet($hkey, $tid, $body);
-            $ret2 =  $pipe->zadd($zkey, $score, $tid);
+            $pipe->hSet($hkey, $tid, $body);
+            $pipe->zadd($zkey, $score, $tid);
             $result = $pipe->exec();
             $isSucc = $result[0] || $result[1];
             if($isSucc){
@@ -137,10 +140,11 @@ class DqRedis{
                 DqRedis::incr_nums($notifyId,'tw:'.date('Ymd'));
                 //记录总的写入个数
                 self::redis_self_incr($redis->rid,self::TOTAL_WRITE_NUMS);
+                DqLog::writeLog('handle succ:'.json_encode($data),DqLog::LOG_TYPE_REQUEST);
+            }else{
+                DqLog::writeLog('handle fail:'.json_encode($data),DqLog::LOG_TYPE_REQUEST);
             }
-            DqLog::writeLog('handle succ:'.json_encode($data),DqLog::LOG_TYPE_REQUEST);
-            //echo  (DqComm::msectime() - $start)."\n";
-            return $ret1 || $ret2;
+            return $isSucc;
         }catch (DqException $e){
             DqLog::writeLog('handle fail:'.json_encode($data).',msg='.$e->getMessage(),DqLog::LOG_TYPE_REQUEST);
             DqLog::writeLog($e->getMessage(),DqLog::LOG_TYPE_EXCEPTION);
@@ -179,17 +183,11 @@ class DqRedis{
                                     if (!$objRdis->rpush($readyKey, $tid)) {
                                         $strMsg = 'move to ready queue failed,id=' . $tid . ',data=' . $objRdis->hget(self::getJobKey(), $tid);
                                         DqLog::writeLog($strMsg, DqLog::LOG_TYPE_EXCEPTION);
-                                    } else {
-                                        DqLog::writeLog('data ready,data=' . json_encode($data) . ' move to queue succ,key=' . $readyKey);
                                     }
                                 }
-                                if($objRdis->delete($lockKey)){
-                                   DqLog::writeLog('delete lock succ,key='.$lockKey);
-                                }else{
+                                if(!$objRdis->delete($lockKey)){
                                    DqLog::writeLog('delete lock fail,key='.$lockKey,DqLog::LOG_TYPE_EXCEPTION);
                                 }
-                            }else{
-                                DqLog::writeLog('get lock fail,tid='.$tid);
                             }
                         }else{
                             break;

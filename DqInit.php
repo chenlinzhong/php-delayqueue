@@ -10,6 +10,8 @@ ini_set('default_socket_timeout', -1); //不超时
 
 DqMain::check_self(DqConf::DQ_MASTER);
 
+pcntl_signal(SIGPIPE,SIG_IGN);
+
 /**
  * 设置listen端口
  */
