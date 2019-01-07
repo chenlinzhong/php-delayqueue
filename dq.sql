@@ -34,7 +34,7 @@ CREATE TABLE `dq_topic` (
 ) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;
 
 CREATE TABLE `dq_stat` (
- `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY key,
+ `id` int(11) NOT NULL AUTO_INCREMENT ,
  `u_key` varchar(255) NOT NULL DEFAULT '',
  `num` int(11) NOT NULL DEFAULT '0',
  `create_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
